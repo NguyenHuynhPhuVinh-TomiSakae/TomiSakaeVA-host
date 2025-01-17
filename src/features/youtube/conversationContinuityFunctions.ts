@@ -60,11 +60,12 @@ const getLastMessages = (
         returnMessages.push({ role: lastRole, content: combinedContent })
       }
       lastRole = message.role
-      combinedContent = message.content
-        ? typeof message.content === 'string'
-          ? message.content
-          : message.content[0].text
-        : ''
+      combinedContent =
+        message.content === undefined
+          ? ''
+          : typeof message.content === 'string'
+            ? message.content
+            : (message.content[0] as { type: 'text'; text: string }).text
     }
 
     // 最後のメッセージの場合、現在の内容を追加
