@@ -47,7 +47,7 @@ export const ChatLog = () => {
                   {msg.content?.find(c => c.type === 'text') && (
                     <Chat
                       role={msg.role}
-                      message={msg.content.find(c => c.type === 'text')?.text || ''}
+                      message={(msg.content.find(c => c.type === 'text') as { type: 'text', text: string })?.text || ''}
                       characterName={characterName}
                     />
                   )}
