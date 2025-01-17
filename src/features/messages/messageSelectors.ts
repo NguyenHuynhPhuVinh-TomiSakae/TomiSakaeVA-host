@@ -37,7 +37,7 @@ export const messageSelectors = {
         // 最後のメッセージだけそのまま利用する（= 最後のメッセージだけマルチモーダルの対象となる）
         const isLastMessage = index === messages.length - 1
         const messageText = Array.isArray(message.content)
-          ? message.content[0].text
+          ? (message.content[0] as { type: 'text'; text: string }).text
           : message.content || ''
 
         let content: Message['content']
@@ -48,7 +48,11 @@ export const messageSelectors = {
           if (isLastMessage && Array.isArray(message.content)) {
             content = [
               { type: 'text', text: content },
-              { type: 'image', image: message.content[1].image },
+              {
+                type: 'image',
+                image: (message.content[1] as { type: 'image'; image: string })
+                  .image,
+              },
             ]
           }
         } else {
@@ -71,37 +75,40 @@ export const messageSelectors = {
       .reduce((acc: Message[], item: Message) => {
         if (
           item.content &&
-          typeof item.content != 'string' &&
+          Array.isArray(item.content) &&
           item.content[0] &&
-          item.content[1]
+          item.content[1] &&
+          item.content[1].type === 'image'
         ) {
-          lastImageUrl = item.content[1].image
+          lastImageUrl = (item.content[1] as { type: 'image'; image: string })
+            .image
         }
 
         const lastItem = acc[acc.length - 1]
         if (lastItem && lastItem.role === item.role) {
-          if (typeof item.content != 'string' && item.content) {
-            lastItem.content += ' ' + item.content[0].text
+          if (Array.isArray(item.content) && item.content[0]?.type === 'text') {
+            lastItem.content +=
+              ' ' + (item.content[0] as { type: 'text'; text: string }).text
           } else {
             lastItem.content += ' ' + item.content
           }
         } else {
           const text = item.content
-            ? typeof item.content != 'string'
-              ? item.content[0].text
+            ? Array.isArray(item.content) && item.content[0]?.type === 'text'
+              ? (item.content[0] as { type: 'text'; text: string }).text
               : item.content
             : ''
-          if (lastImageUrl != '') {
+          if (lastImageUrl !== '') {
             acc.push({
               ...item,
               content: [
-                { type: 'text', text: text.trim() },
+                { type: 'text', text: (text as string).trim() },
                 { type: 'image', image: lastImageUrl },
               ],
             })
             lastImageUrl = ''
           } else {
-            acc.push({ ...item, content: text.trim() })
+            acc.push({ ...item, content: (text as string).trim() })
           }
         }
         return acc
@@ -118,7 +125,7 @@ export const messageSelectors = {
           ? ''
           : typeof message.content === 'string'
             ? message.content
-            : message.content[0].text,
+            : (message.content[0] as { type: 'text'; text: string }).text,
     }))
   },
 }
