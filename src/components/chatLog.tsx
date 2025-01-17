@@ -55,7 +55,9 @@ export const ChatLog = () => {
                     <ChatImage
                       key={index}
                       role={msg.role}
-                      imageUrl={'image' in imgContent ? imgContent.image : imgContent.image_url.url}
+                      imageUrl={'image' in imgContent
+                        ? (imgContent as { type: 'image', image: string }).image
+                        : (imgContent as { type: 'image_url', image_url: { url: string } }).image_url.url}
                       characterName={characterName}
                     />
                   ))}
